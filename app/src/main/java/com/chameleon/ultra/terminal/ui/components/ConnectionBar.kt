@@ -4,8 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bluetooth
-import androidx.compose.material.icons.filled.Cable
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -71,9 +71,9 @@ fun ConnectionBar(
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = when (connectionManager.getConnectionType()) {
-                            ConnectionType.USB -> Icons.Default.Cable
-                            ConnectionType.BLUETOOTH -> Icons.Default.Bluetooth
-                            else -> Icons.Default.Cable
+                            ConnectionType.USB -> Icons.Default.Home
+                            ConnectionType.BLUETOOTH -> Icons.Default.Settings
+                            else -> Icons.Default.Home
                         },
                         contentDescription = connectionManager.getConnectionType().name,
                         tint = Color.Green,
@@ -106,7 +106,7 @@ fun ConnectionBar(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Cable,
+                            imageVector = Icons.Default.Home,
                             contentDescription = "USB",
                             modifier = Modifier.size(16.dp)
                         )
@@ -124,7 +124,7 @@ fun ConnectionBar(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Bluetooth,
+                            imageVector = Icons.Default.Settings,
                             contentDescription = "Bluetooth",
                             modifier = Modifier.size(16.dp)
                         )
