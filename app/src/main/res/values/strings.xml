@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chameleon Ultra Terminal</string>
+    <string name="terminal_tab">Terminal</string>
+    <string name="gui_tab">GUI</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="usb_connection">USB</string>
+    <string name="bluetooth_connection">Bluetooth</string>
+    <string name="device_not_connected">Device not connected</string>
+    <string name="device_connected">Device connected</string>
+    <string name="send_command">Send Command</string>
+    <string name="clear_terminal">Clear</string>
+    <string name="command_hint">Enter command...</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- USB device filter for Chameleon Ultra -->
+    <usb-device vendor-id="6790" product-id="29987" />
+    <!-- Add other vendor/product IDs as needed -->
+</resources>
