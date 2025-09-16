@@ -3,6 +3,7 @@ package com.chameleon.ultra.terminal.communication
 import android.content.Context
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.util.Log
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
@@ -21,10 +22,16 @@ class UsbConnection(
     private var driver: UsbSerialDriver? = null
     private val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
 
+    companion object {
+        private const val TAG = "UsbConnection"
+    }
+
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Attempting USB connection")
             val availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
             if (availableDrivers.isEmpty()) {
+                Log.e(TAG, "No USB devices found")
                 return@withContext false
             }
 
@@ -41,22 +48,26 @@ class UsbConnection(
                         open(connection)
                         setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
                     }
+                    Log.d(TAG, "USB connection successful")
                     return@withContext true
                 }
             }
+            Log.e(TAG, "Failed to establish USB connection")
             false
         } catch (e: Exception) {
+            Log.e(TAG, "USB connection error", e)
             false
         }
     }
 
     override suspend fun disconnect() = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Disconnecting USB")
             serialPort?.close()
             serialPort = null
             driver = null
         } catch (e: Exception) {
-            // Handle disconnect errors
+            Log.e(TAG, "Error during USB disconnect", e)
         }
     }
 
@@ -65,6 +76,7 @@ class UsbConnection(
             serialPort?.write(data, 1000) ?: return@withContext false
             true
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to send USB data", e)
             false
         }
     }
@@ -78,6 +90,7 @@ class UsbConnection(
                     emit(buffer.copyOf(bytesRead))
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error reading USB data", e)
                 break
             }
         }
