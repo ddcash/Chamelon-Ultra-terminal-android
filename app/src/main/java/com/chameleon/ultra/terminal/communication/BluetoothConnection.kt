@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -28,13 +27,11 @@ class BluetoothConnection(
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
     companion object {
-        private const val TAG = "BluetoothConnection"
         private val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     }
 
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Attempting Bluetooth connection")
             val targetDevice = device ?: bluetoothAdapter?.bondedDevices?.find {
                 it.name?.contains("Chameleon", ignoreCase = true) == true
             }
@@ -47,20 +44,16 @@ class BluetoothConnection(
                 inputStream = bluetoothSocket?.inputStream
                 outputStream = bluetoothSocket?.outputStream
 
-                Log.d(TAG, "Bluetooth connection successful")
                 return@withContext true
             }
-            Log.e(TAG, "No suitable Chameleon device found")
             false
         } catch (e: IOException) {
-            Log.e(TAG, "Bluetooth connection failed", e)
             false
         }
     }
 
     override suspend fun disconnect() = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Disconnecting Bluetooth")
             inputStream?.close()
             outputStream?.close()
             bluetoothSocket?.close()
@@ -68,7 +61,7 @@ class BluetoothConnection(
             outputStream = null
             bluetoothSocket = null
         } catch (e: IOException) {
-            Log.e(TAG, "Error during Bluetooth disconnect", e)
+            // Handle disconnect errors
         }
     }
 
@@ -78,7 +71,6 @@ class BluetoothConnection(
             outputStream?.flush()
             true
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to send Bluetooth data", e)
             false
         }
     }
@@ -92,7 +84,6 @@ class BluetoothConnection(
                     emit(buffer.copyOf(bytesRead))
                 }
             } catch (e: IOException) {
-                Log.e(TAG, "Error reading Bluetooth data", e)
                 break
             }
         }
