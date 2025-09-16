@@ -34,68 +34,39 @@ class BluetoothConnection(
 
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Starting Bluetooth connection")
-
-            if (bluetoothAdapter == null) {
-                Log.e(TAG, "Bluetooth adapter not available")
-                return@withContext false
-            }
-
-            val targetDevice = device ?: bluetoothAdapter.bondedDevices?.find {
+            Log.d(TAG, "Attempting Bluetooth connection")
+            val targetDevice = device ?: bluetoothAdapter?.bondedDevices?.find {
                 it.name?.contains("Chameleon", ignoreCase = true) == true
             }
 
-            if (targetDevice == null) {
-                Log.e(TAG, "No suitable Chameleon device found. Paired devices: ${bluetoothAdapter.bondedDevices?.map { it.name }}")
-                return@withContext false
-            }
-
-            Log.d(TAG, "Attempting to connect to device: ${targetDevice.name} (${targetDevice.address})")
-
-            targetDevice.let { btDevice ->
+            targetDevice?.let { btDevice ->
                 bluetoothSocket = btDevice.createRfcommSocketToServiceRecord(SPP_UUID)
-                Log.d(TAG, "Created RFCOMM socket with SPP UUID")
-
-                bluetoothAdapter.cancelDiscovery()
-                Log.d(TAG, "Cancelled Bluetooth discovery")
+                bluetoothAdapter?.cancelDiscovery()
 
                 bluetoothSocket?.connect()
-                Log.d(TAG, "Bluetooth socket connected successfully")
-
                 inputStream = bluetoothSocket?.inputStream
                 outputStream = bluetoothSocket?.outputStream
-                Log.d(TAG, "Input/Output streams initialized")
 
+                Log.d(TAG, "Bluetooth connection successful")
                 return@withContext true
             }
+            Log.e(TAG, "No suitable Chameleon device found")
+            false
         } catch (e: IOException) {
             Log.e(TAG, "Bluetooth connection failed", e)
-            // Clean up on failure
-            try {
-                bluetoothSocket?.close()
-                bluetoothSocket = null
-                inputStream = null
-                outputStream = null
-            } catch (cleanupException: IOException) {
-                Log.e(TAG, "Error during cleanup after failed connection", cleanupException)
-            }
-            return@withContext false
-        } catch (e: Exception) {
-            Log.e(TAG, "Unexpected error during Bluetooth connection", e)
-            return@withContext false
+            false
         }
     }
 
     override suspend fun disconnect() = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Disconnecting Bluetooth device")
+            Log.d(TAG, "Disconnecting Bluetooth")
             inputStream?.close()
             outputStream?.close()
             bluetoothSocket?.close()
             inputStream = null
             outputStream = null
             bluetoothSocket = null
-            Log.d(TAG, "Bluetooth device disconnected successfully")
         } catch (e: IOException) {
             Log.e(TAG, "Error during Bluetooth disconnect", e)
         }
@@ -103,25 +74,21 @@ class BluetoothConnection(
 
     override suspend fun sendData(data: ByteArray): Boolean = withContext(Dispatchers.IO) {
         try {
-            val stream = outputStream ?: return@withContext false
-            stream.write(data)
-            stream.flush()
-            Log.d(TAG, "Sent ${data.size} bytes via Bluetooth")
+            outputStream?.write(data)
+            outputStream?.flush()
             true
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to send data via Bluetooth", e)
+            Log.e(TAG, "Failed to send Bluetooth data", e)
             false
         }
     }
 
     override fun receiveData(): Flow<ByteArray> = flow {
         val buffer = ByteArray(1024)
-        Log.d(TAG, "Starting Bluetooth data reception")
         while (isConnected()) {
             try {
                 val bytesRead = inputStream?.read(buffer) ?: 0
                 if (bytesRead > 0) {
-                    Log.d(TAG, "Received $bytesRead bytes via Bluetooth")
                     emit(buffer.copyOf(bytesRead))
                 }
             } catch (e: IOException) {
@@ -129,7 +96,6 @@ class BluetoothConnection(
                 break
             }
         }
-        Log.d(TAG, "Bluetooth data reception stopped")
     }.flowOn(Dispatchers.IO)
 
     override fun isConnected(): Boolean {
