@@ -7,6 +7,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     name: Build APK
@@ -53,43 +57,34 @@ jobs:
 
     - name: Create Release
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v1.0.${{ github.run_number }}
-        release_name: Chameleon Ultra Terminal v1.0.${{ github.run_number }}
-        body: |
-          ## Chameleon Ultra Terminal Android App
+      run: |
+        TAG_NAME="v1.0.${{ github.run_number }}"
+        RELEASE_NAME="Chameleon Ultra Terminal v1.0.${{ github.run_number }}"
 
-          ### Features:
-          - 🔌 USB and Bluetooth connectivity
-          - 💻 Terminal and GUI interfaces
-          - 📡 Proxmark3 command compatibility
-          - 🎛️ Full device control
+        # Create release with GitHub CLI
+        gh release create "$TAG_NAME" \
+          app/build/outputs/apk/debug/app-debug.apk#chameleon-ultra-terminal-v1.0.${{ github.run_number }}.apk \
+          --title "$RELEASE_NAME" \
+          --notes "## Chameleon Ultra Terminal Android App
 
-          ### Installation:
-          1. Download the APK below
-          2. Enable "Install from unknown sources" in Android settings
-          3. Install the APK
-          4. Grant USB and Bluetooth permissions when prompted
+### Features:
+- 🔌 USB and Bluetooth connectivity
+- 💻 Terminal and GUI interfaces
+- 📡 Proxmark3 command compatibility
+- 🎛️ Full device control
 
-          ### Usage:
-          - Connect your Chameleon Ultra via USB or Bluetooth
-          - Use terminal commands like `hw version`, `hf search`, etc.
-          - Switch to GUI mode for visual controls
+### Installation:
+1. Download the APK below
+2. Enable \"Install from unknown sources\" in Android settings
+3. Install the APK
+4. Grant USB and Bluetooth permissions when prompted
 
-          Built automatically from commit ${{ github.sha }}
-        draft: false
-        prerelease: false
+### Usage:
+- Connect your Chameleon Ultra via USB or Bluetooth
+- Use terminal commands like \`hw version\`, \`hf search\`, etc.
+- Switch to GUI mode for visual controls
 
-    - name: Upload Release Asset
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: app/build/outputs/apk/debug/app-debug.apk
-        asset_name: chameleon-ultra-terminal-v1.0.${{ github.run_number }}.apk
-        asset_content_type: application/vnd.android.package-archive
+Built automatically from commit ${{ github.sha }}" \
+          --latest
