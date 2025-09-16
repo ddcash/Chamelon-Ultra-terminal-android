@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -50,7 +50,7 @@ fun ConnectionBar(
                         Color.Gray to "Disconnected"
                     }
                     is ConnectionManager.ConnectionState.Error -> {
-                        Color.Red to "Error: ${connectionState.message}"
+                        Color.Red to "Error: ${(connectionState as ConnectionManager.ConnectionState.Error).message}"
                     }
                 }
 
@@ -72,7 +72,7 @@ fun ConnectionBar(
                     Icon(
                         imageVector = when (connectionManager.getConnectionType()) {
                             ConnectionType.USB -> Icons.Default.Usb
-                            ConnectionType.BLUETOOTH -> Icons.Default.Bluetooth
+                            ConnectionType.BLUETOOTH -> Icons.Default.BluetoothConnected
                             else -> Icons.Default.Usb
                         },
                         contentDescription = connectionManager.getConnectionType().name,
@@ -124,7 +124,7 @@ fun ConnectionBar(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Bluetooth,
+                            imageVector = Icons.Default.BluetoothConnected,
                             contentDescription = "Bluetooth",
                             modifier = Modifier.size(16.dp)
                         )
